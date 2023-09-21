@@ -61,18 +61,3 @@ let bindedSpecs = car.specs.bind(car);
 setTimeout(bindedSpecs, 1000);
 let bindedDesign = car.design.bind(car);
 setTimeout(bindedDesign, 1000); */
-
-function durationBetweenDates(startDate = '01 Jan 2000', endDate = '01 Jan 2023', timePeriod = 'days') {
-
-  const total = Date.parse(endDate) - Date.parse(startDate);
-  switch (timePeriod) {
-    case 'days': return Math.floor( total/(1000*60*60*24) );
-    case 'hours': return Math.floor( (total/(1000*60*60)) % 24 );
-    case 'minutes': return Math.floor( (total/1000/60) % 60 );
-    case 'seconds': return Math.floor( (total/1000) % 60 );
-    default: return 0;
-  }
-}
-
-let result = durationBetweenDates()
-console.log(result)
