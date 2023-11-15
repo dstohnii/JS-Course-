@@ -4,7 +4,7 @@
 
 // Task 1
 
-/* let delay = 3;
+let delay = 3;
 let intervalId = setInterval(() => {
   if (delay > 0) {
     console.log(delay)
@@ -13,11 +13,11 @@ let intervalId = setInterval(() => {
     clearInterval(intervalId);
     console.log('BOOM!')
   }
-}, 1000) */
+}, 1000)
 
 // Task 2
 
-/* function detonatorTimer(delay) {
+function detonatorTimer(delay) {
   if (delay > 0) {
     console.log(delay);
     delay --;
@@ -26,11 +26,11 @@ let intervalId = setInterval(() => {
     console.log('BOOM!');
   }
 }
-detonatorTimer(3); */
+detonatorTimer(3);
 
 //Task 3
 
-/* let car = {
+let car = {
 	brand: 'Range Rover',
 	model: 'Evoque',
 	year: 2023,
@@ -51,13 +51,13 @@ detonatorTimer(3); */
 
 car.overview();
 car.specs();
-car.design(); */
+car.design();
 
 // Task 4
 
-/* let bindedOverview = car.overview.bind(car);
+let bindedOverview = car.overview.bind(car);
 setTimeout(bindedOverview, 1000);
 let bindedSpecs = car.specs.bind(car);
 setTimeout(bindedSpecs, 1000);
 let bindedDesign = car.design.bind(car);
-setTimeout(bindedDesign, 1000); */
+setTimeout(bindedDesign, 1000);
