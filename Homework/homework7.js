@@ -12,14 +12,13 @@
 
 // let sum = addThemAll(4, 9, 16, 25);
 // console.log(sum)
+
 function addThemAll(...args) {
-  let addThemAll = 0;
-  for (let arg of args) addThemAll += arg;
-  return addThemAll;
+  return args.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 }
 
 let sum = addThemAll(4, 9, 16, 25);
-console.log(sum)
+console.log(sum);
 
 // Task 2
 
