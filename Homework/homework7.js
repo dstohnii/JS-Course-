@@ -4,6 +4,14 @@
 
 // Task 1
 
+// function addThemAll(...args) {
+//   let addThemAll = 0;
+//   for (let arg of args) addThemAll += arg;
+//   return addThemAll;
+// }
+
+// let sum = addThemAll(4, 9, 16, 25);
+// console.log(sum)
 function addThemAll(...args) {
   let addThemAll = 0;
   for (let arg of args) addThemAll += arg;
@@ -22,4 +30,3 @@ function multiply(a) {
 }
 
 console.log(multiply(5)(2))
-
