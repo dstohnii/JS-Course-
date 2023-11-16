@@ -1,6 +1,7 @@
 const history = [];
 const MAX_HISTORY_ITEMS = 10;
 const STORAGE_KEY = "taskStorage";
+const API_KEY = "u0Xtp2lFiRPEFDJIy2ShMK43f4YsZyAA";
 
 function openTab(tabName) {
     const tabs = document.getElementsByClassName("tab");
@@ -8,6 +9,12 @@ function openTab(tabName) {
         tabs[i].style.display = "none";
     }
     document.getElementById(tabName).style.display = "block";
+}
+
+
+function getHolidaysFromAPI(country, year) {
+    return fetch(`https://calendarific.com/api/v2/holidays?api_key=${API_KEY}&country=${country}&year=${year}`)
+        .then(response => response.json())
 }
 
 // Tab1 functionality
