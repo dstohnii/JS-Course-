@@ -1,5 +1,6 @@
 const history = [];
-const maxHistoryItems = 10;
+const MAX_HISTORY_ITEMS = 10;
+const STORAGE_KEY = "taskStorage";
 
 function openTab(tabName) {
     const tabs = document.getElementsByClassName("tab");
@@ -9,11 +10,11 @@ function openTab(tabName) {
     document.getElementById(tabName).style.display = "block";
 }
 
+// Tab1 functionality
 const buttonWeekPeriod = document.getElementById('weekPeriod'); 
 const buttonMonthPeriod = document.getElementById('monthPeriod'); 
 const startDate = document.getElementById('start-date');
 const endDate = document.getElementById('end-date');
-
 
 buttonWeekPeriod.addEventListener('click', () => { 
     calculateEndDate(7);
@@ -33,47 +34,72 @@ function calculateEndDate(daysToAdd) {
     endDate.value = currentDate.toISOString().slice(0, 10);
 }
 
-// Функція для оновлення історії в `localStorage`
-function updateLocalStorage() {
-    localStorage.setItem('history', JSON.stringify(history.slice(-10)));
-}
-
-// Завантаження даних з `localStorage` при початковій ініціалізації
-function loadHistoryFromLocalStorage() {
-    const historyData = localStorage.getItem('history');
-    if (historyData) {
-        history = JSON.parse(historyData);
-        updateHistoryTable();
-    }
-}
-
 // Функція для додавання нового результату до історії та оновлення `localStorage`
-function addToHistoryAndLocalStorage(item) {
+function addToHistory(item) {
     history.push(item);
 
-    if (history.length > maxHistoryItems) {
+    if (history.length > MAX_HISTORY_ITEMS) {
         history.shift();
     }
 
     updateHistoryTable();
-    updateLocalStorage();
 }
 
 // При запуску сторінки
-window.addEventListener('load', function() {
-    loadHistoryFromLocalStorage();
-});
+document.addEventListener("DOMContentLoaded", (event) => {
+    console.log("DOM fully loaded and parsed");
+  });
 
-function calculateTimeRange() {
+// Завжди повертає масив
+function getResultFromStorage() {
+    const results = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    return results;
+};
+
+function setResultToStorage(result) {
+    const results = getResultFromStorage();
+    if (!exceedsPropertiesLengthLimit(results)) {
+        results.push(result);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+    }
+};
+
+function getDataFromLocalStorage() {
+    const results = getResultFromStorage();
+    const historyBody = document.getElementById("history-body");
+    historyBody.innerHTML = "";
+
+    for (const result of results) {
+        const row = historyBody.insertRow();
+        const startDateCell = row.insertCell(0);
+        const endDateCell = row.insertCell(1);
+        const resultCell = row.insertCell(2);
+
+        startDateCell.textContent = result.startDate;
+        endDateCell.textContent = result.endDate;
+        resultCell.textContent = result.result;
+    }
+}
+
+function fillInResultsTable() {
     const startDate = new Date(document.getElementById("start-date").value);
     const endDate = new Date(document.getElementById("end-date").value);
     const dayOptions = document.getElementById("day-options").value;
     const timeOptions = document.getElementById("time-options").value;
 
+    result = calculateTimeDifference(startDate, endDate, dayOptions, timeOptions);
+
+    const resultText = `Result: ${result} ${timeOptions}`;
+    document.getElementById("time-range-result").textContent = resultText;
+
+    addResultToHistory(startDate, endDate, resultText);
+}
+
+function calculateTimeDifference(startDate, endDate, dayOptions, timeOptions) {
+    let result;
     if (startDate && endDate) {
         const diff = endDate - startDate;
         const days = diff / (1000 * 60 * 60 * 24);
-        let result;
 
         if (dayOptions === "weekdays") {
             result = Math.floor(days / 7) * 5;
@@ -90,26 +116,20 @@ function calculateTimeRange() {
         } else if (timeOptions === "seconds") {
             result *= 24 * 60 * 60;
         }
-
-        const resultText = `Result: ${result} ${timeOptions}`;
-        document.getElementById("time-range-result").textContent = resultText;
-
-        // Додавання результату до історії
-        const historyItem = {
-            startDate: startDate.toISOString().slice(0, 10),
-            endDate: endDate.toISOString().slice(0, 10),
-            result: resultText,
-        };
-
-        history.push(historyItem);
-
-        if (history.length > maxHistoryItems) {
-            history.shift();
-        }
-
-        localStorage.setItem('historyResult', 'historyItem');
-        updateHistoryTable();
     }
+    return result;
+}
+
+function addResultToHistory(startDate, endDate, resultText) {
+    let historyItem = {
+        startDate: startDate.toISOString().slice(0, 10),
+        endDate: endDate.toISOString().slice(0, 10),
+        result: resultText,
+    };
+
+    addToHistory(historyItem);
+    setResultToStorage(historyItem);
+    updateHistoryTable();
 }
 
 function updateHistoryTable() {
@@ -128,17 +148,15 @@ function updateHistoryTable() {
     }
 }
 
+// Tab2 functionality
 function getHolidays() {
-
     let country = document.getElementById("country-select").value;
     let year = document.getElementById("year-select").value;
     let holidaysTable = document.getElementById("holidays-table");
     let holidaysBody = document.getElementById("holidays-body");
     let holidaysError = document.getElementById("holidays-error");
 
-    fetch(`https://calendarific.com/api/v2/holidays?api_key=u0Xtp2lFiRPEFDJIy2ShMK43f4YsZyAA&country=${country}&year=${year}`)
-        .then(response => response.json())
-        .then(data => {
+    getHolidaysFromAPI(country, year).then(data => {
             if (data.response && data.response.holidays) {
                 holidaysError.textContent = "";
                 holidaysTable.style.display = "table";
@@ -175,7 +193,7 @@ function initializeYearSelect() {
     let countrySelect = document.getElementById("country-select")
     const yearSelect = document.getElementById("year-select");
 
-    countrySelect.addEventListener('click', () => {
+    countrySelect.addEventListener('change', () => {
         yearSelect.removeAttribute("disabled");
     });
 
@@ -207,10 +225,11 @@ function enableIntervalInputs() {
     });
 }
 
+// За замовчуванням відкриємо першу вкладку
+openTab('tab1');
 
+//Ініціалізація даних разрахунку часових інтервалів з Local Storage
+getDataFromLocalStorage();
 // Ініціалізація вибору країн і років та інших функцій
 initializeYearSelect();
 enableIntervalInputs();
-
-// За замовчуванням відкриємо першу вкладку
-openTab('tab1');
