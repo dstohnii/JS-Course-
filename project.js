@@ -1,6 +1,7 @@
 const history = [];
 const MAX_HISTORY_ITEMS = 10;
 const STORAGE_KEY = "taskStorage";
+const API_KEY = "u0Xtp2lFiRPEFDJIy2ShMK43f4YsZyAA";
 
 function openTab(tabName) {
     const tabs = document.getElementsByClassName("tab");
@@ -10,6 +11,11 @@ function openTab(tabName) {
     document.getElementById(tabName).style.display = "block";
 }
 
+function getHolidaysFromAPI(country, year) {
+    return fetch(`https://calendarific.com/api/v2/holidays?api_key=${API_KEY}&country=${country}&year=${year}`)
+        .then(response => response.json())
+}
+
 // Tab1 functionality
 const buttonWeekPeriod = document.getElementById('weekPeriod'); 
 const buttonMonthPeriod = document.getElementById('monthPeriod'); 
@@ -17,12 +23,14 @@ const startDate = document.getElementById('start-date');
 const endDate = document.getElementById('end-date');
 
 buttonWeekPeriod.addEventListener('click', () => { 
+    endDate.removeAttribute("disabled");
     const currentDate = new Date();
     startDate.value = currentDate.toISOString().slice(0, 10);
     calculateEndDate(7);
 });
 
 buttonMonthPeriod.addEventListener('click', () => { 
+    endDate.removeAttribute("disabled");
     let currentDate = new Date();
     let month = currentDate.getMonth() + 1;
     let year = currentDate.getFullYear();
@@ -53,6 +61,20 @@ document.addEventListener("DOMContentLoaded", (event) => {
     console.log("DOM fully loaded and parsed");
   });
 
+// Завжди повертає масив
+function getResultFromStorage() {
+    const results = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    return results;
+};
+
+function setResultToStorage(result) {
+    const results = getResultFromStorage();
+    if (!exceedsPropertiesLengthLimit(results)) {
+        results.push(result);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+    }
+};
+
 function getDataFromLocalStorage() {
     const results = getResultFromStorage();
     const historyBody = document.getElementById("history-body");
@@ -70,6 +92,16 @@ function getDataFromLocalStorage() {
     }
 }
 
+function exceedsPropertiesLengthLimit(properties) {
+    let limitLength = 10;
+    let exceedsLimit = false;
+
+    if (properties.length + 1 > limitLength) {
+        exceedsLimit = true;
+    }
+    return exceedsLimit;
+}
+
 function fillInResultsTable() {
     const startDate = new Date(document.getElementById("start-date").value);
     const endDate = new Date(document.getElementById("end-date").value);
@@ -82,6 +114,43 @@ function fillInResultsTable() {
     document.getElementById("time-range-result").textContent = resultText;
 
     addResultToHistory(startDate, endDate, resultText);
+}
+
+function calculateTimeDifference(startDate, endDate, dayOptions, timeOptions) {
+    let result;
+    if (startDate && endDate) {
+        const diff = endDate - startDate;
+        const days = diff / (1000 * 60 * 60 * 24);
+
+        if (dayOptions === "weekdays") {
+            result = Math.floor(days / 7) * 5;
+        } else if (dayOptions === "weekends") {
+            result = Math.floor(days / 7) * 2;
+        } else {
+            result = days;
+        }
+
+        if (timeOptions === "hours") {
+            result *= 24;
+        } else if (timeOptions === "minutes") {
+            result *= 24 * 60;
+        } else if (timeOptions === "seconds") {
+            result *= 24 * 60 * 60;
+        }
+    }
+    return result;
+}
+
+function addResultToHistory(startDate, endDate, resultText) {
+    let historyItem = {
+        startDate: startDate.toISOString().slice(0, 10),
+        endDate: endDate.toISOString().slice(0, 10),
+        result: resultText,
+    };
+
+    addToHistory(historyItem);
+    setResultToStorage(historyItem);
+    updateHistoryTable();
 }
 
 function updateHistoryTable() {
@@ -182,7 +251,7 @@ function sortByDate() {
     const dateArrowAsc = document.getElementById('sort-asc');
     const dateArrowDesc = document.getElementById('sort-desc');
     dateArrowAsc.addEventListener('click', () => { 
-        sortBy("ASK");
+        sortBy("ASC");
     });
     dateArrowDesc.addEventListener('click', () => { 
         sortBy("DESC");
@@ -192,12 +261,12 @@ function sortByDate() {
 function sortBy(sortMethod) {
     const table = document.getElementById("holidays-table");
     const tbody = table.querySelector("tbody");
-    const row = Array.from(tbody.querySelectorAll("tr"));
+    const rows = Array.from(tbody.querySelectorAll("tr"));
   
     rows.sort((rowA, rowB) => {
       const dateA = new Date(rowA.cells[0].textContent).getTime();
       const dateB = new Date(rowB.cells[0].textContent).getTime();
-      if (sortMethod === "ASK") {
+      if (sortMethod === "ASC") {
         return dateA - dateB;
       } else {
         return dateB - dateA;
@@ -212,8 +281,6 @@ function sortBy(sortMethod) {
       tbody.appendChild(row);
     });
   }
-  
-  // Usage: Call this function to sort the table by date column
 
 // За замовчуванням відкриємо першу вкладку
 openTab('tab1');
