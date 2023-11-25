@@ -1,7 +1,8 @@
+import { getHolidaysFromAPI } from "./api.js";
+
 const history = [];
-const MAX_HISTORY_ITEMS = 10;
+const MAX_HISTORY_ITEMS = 9;
 const STORAGE_KEY = "taskStorage";
-const API_KEY = "u0Xtp2lFiRPEFDJIy2ShMK43f4YsZyAA";
 
 function openTab(tabName) {
     const tabs = document.getElementsByClassName("tab");
@@ -11,22 +12,35 @@ function openTab(tabName) {
     document.getElementById(tabName).style.display = "block";
 }
 
-function getHolidaysFromAPI(country, year) {
-    return fetch(`https://calendarific.com/api/v2/holidays?api_key=${API_KEY}&country=${country}&year=${year}`)
-        .then(response => response.json())
-}
-
-// Tab1 functionality
 const buttonWeekPeriod = document.getElementById('weekPeriod'); 
 const buttonMonthPeriod = document.getElementById('monthPeriod'); 
 const startDate = document.getElementById('start-date');
 const endDate = document.getElementById('end-date');
+const tab1 = document.getElementById("tab1");
+const tab2 = document.getElementById("tab2");
+const calculateTimeIntervalsBtn = document.getElementById("calculate-results");
+const renderHolidaysBtn = document.getElementById("render-holidays");
+
+// Tab1 functionality
+timeIntervalBtn.addEventListener('click', () => {
+    tab1.style.display = "block";
+    tab2.style.display = "none";
+});
+
+holidaysListBtn.addEventListener('click', () => {
+    tab1.style.display = "none";
+    tab2.style.display = "block";
+});
 
 buttonWeekPeriod.addEventListener('click', () => { 
     endDate.removeAttribute("disabled");
     const currentDate = new Date();
     startDate.value = currentDate.toISOString().slice(0, 10);
     calculateEndDate(7);
+});
+
+calculateTimeIntervalsBtn.addEventListener('click', () => {
+    fillInResultsTable();
 });
 
 buttonMonthPeriod.addEventListener('click', () => { 
@@ -93,10 +107,9 @@ function getDataFromLocalStorage() {
 }
 
 function exceedsPropertiesLengthLimit(properties) {
-    let limitLength = 10;
     let exceedsLimit = false;
 
-    if (properties.length + 1 > limitLength) {
+    if (properties.length > MAX_HISTORY_ITEMS) {
         exceedsLimit = true;
     }
     return exceedsLimit;
@@ -108,7 +121,7 @@ function fillInResultsTable() {
     const dayOptions = document.getElementById("day-options").value;
     const timeOptions = document.getElementById("time-options").value;
 
-    result = calculateTimeDifference(startDate, endDate, dayOptions, timeOptions);
+    let result = calculateTimeDifference(startDate, endDate, dayOptions, timeOptions);
 
     const resultText = `Result: ${result} ${timeOptions}`;
     document.getElementById("time-range-result").textContent = resultText;
@@ -170,8 +183,11 @@ function updateHistoryTable() {
 }
 
 // Tab2 functionality
+renderHolidaysBtn.addEventListener('click', () => {
+    renderHolidays();
+});
 
-function getHolidays() {
+function renderHolidays() {
     let country = document.getElementById("country-select").value;
     let year = document.getElementById("year-select").value;
     let holidaysTable = document.getElementById("holidays-table");
@@ -230,14 +246,12 @@ function initializeYearSelect() {
 function enableIntervalInputs() {
     const startDateInput = document.getElementById("start-date");
     const endDateInput = document.getElementById("end-date");
-    const intervalSelect = document.getElementById("time-interval");
     const dayOptionsSelect = document.getElementById("day-options");
     const timeOptionsSelect = document.getElementById("time-options");
 
     startDateInput.addEventListener("change", function () {
         endDateInput.removeAttribute("disabled");
         endDateInput.min = startDateInput.value;
-        intervalSelect.removeAttribute("disabled");
         dayOptionsSelect.removeAttribute("disabled");
         timeOptionsSelect.removeAttribute("disabled");
     });

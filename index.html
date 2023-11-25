@@ -3,17 +3,18 @@
     <title>Course work</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script defer type="module" src="project.js"></script>
+    <link rel="stylesheet" href="project.css">
+    <link rel="icon" type="image/png" href="./assets/favicon.png" sizes="16x16">
 <head>
 
 </head>
 <body>
-    <script defer src="project.js"></script>
-    <link rel="stylesheet" href="project.css">
 
     <div class="container">
     <div class="tabs">
-        <button class="tab-link" onclick="openTab('tab1')">Time Interval Counter</button>
-        <button class="tab-link" onclick="openTab('tab2')">Holidays list</button>
+        <button id="timeIntervalBtn" class="tab-link">Time Interval Counter</button>
+        <button id="holidaysListBtn" class="tab-link">Holidays list</button>
     </div>
 
     <div id="tab1" class="tab">
@@ -44,7 +45,7 @@
             <option value="seconds">Seconds</option>
         </select><br>
 
-        <button onclick="fillInResultsTable()">Calculate</button>
+        <button id="calculate-results">Calculate</button>
         <p id="time-range-result"></p>
         <h3>Results</h3>
         <table id="history-table">
@@ -320,7 +321,7 @@
                 <label for="year">Choose year</label>
                 <select type="year" id="year-select" disabled="disabled"></select><br>
 
-                <button onclick="getHolidays()">View holidays</button>
+                <button id="render-holidays">View holidays</button>
                 <div id="holidays-error" style="color: red;"></div>
                 <table id="holidays-table">
                     <thead>
